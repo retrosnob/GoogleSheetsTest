@@ -38,7 +38,11 @@ public class Main {
     public static void main(String... args) throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        final String spreadsheetId = "1upY5Zq2zbgWb9-BkJSnqi5JukW07cAgipW3OgicM3f0";
+        
+        // PASTE THE ID OF YOUR GOOGLE SHEET HERE ***************************************
+        final String spreadsheetId = "1upY5Zq2zbgWb9-BkJSnqi5JukW07cAgipW3OgicM3f0"; 
+        // ******************************************************************************   
+        
         final String range = "Sheet1!A1";
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
