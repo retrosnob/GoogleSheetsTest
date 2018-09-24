@@ -1,4 +1,3 @@
-
 package googlesheetstest;
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -43,15 +42,17 @@ public class Main {
     public static void main(String... args) throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        
+
         // PASTE THE ID OF YOUR GOOGLE SHEET HERE ***************************************
-        final String spreadsheetId = "1upY5Zq2zbgWb9-BkJSnqi5JukW07cAgipW3OgicM3f0"; 
+        final String spreadsheetId = "1upY5Zq2zbgWb9-BkJSnqi5JukW07cAgipW3OgicM3f0";
         // ******************************************************************************   
-        
+
         final String range = "Test!A1";
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+
+        // This code just does a test read of the data in range.
         ValueRange response = service.spreadsheets().values()
                 .get(spreadsheetId, range)
                 .execute();
@@ -61,25 +62,38 @@ public class Main {
         } else {
             System.out.println(values.get(0));
         }
-//        UpdateValuesResponse updateResponse = updateValues(spreadsheetId, range);
-        AppendValuesResponse appendResponse = appendValues(spreadsheetId, range);
+
+        // These calls write to the sheet
+        ArrayList valuesToUpdate = new ArrayList();
+        valuesToUpdate.add("This");
+        valuesToUpdate.add("will");
+        valuesToUpdate.add("overwrite");
+        valuesToUpdate.add("the");
+        valuesToUpdate.add("first");
+        valuesToUpdate.add("row");
+        valuesToUpdate.add((new java.util.Date()).toString());
+        UpdateValuesResponse updateResponse = updateValues(spreadsheetId, range, valuesToUpdate);
+
+        ArrayList valuesToAppend = new ArrayList();
+        valuesToAppend.add("This");
+        valuesToAppend.add("will");
+        valuesToAppend.add("be");
+        valuesToAppend.add("appended");
+        valuesToAppend.add("after");
+        valuesToAppend.add((new java.util.Date()).toString());
+        AppendValuesResponse appendResponse = appendValues(spreadsheetId, range, valuesToAppend);
     }
-    
-    public static UpdateValuesResponse updateValues(String spreadsheetId, String range)
+
+    public static UpdateValuesResponse updateValues(String spreadsheetId, String range, ArrayList<Object> values)
             throws IOException {
-        
-        List<List<Object>> values = new ArrayList();
-        values.add(new ArrayList());
-        values.get(0).add("Jackdaws");
-        values.get(0).add("love");
-        values.get(0).add("my");
-        values.get(0).add("big");
-        
-        ValueRange body = new ValueRange()
-                .setValues(values);
-        UpdateValuesResponse result =
-                service.spreadsheets().values().update(spreadsheetId, range, body)
-                        .setValueInputOption("USER_ENTERED")
+
+        List<List<Object>> list = new ArrayList();
+        list.add(values);
+
+        ValueRange body = new ValueRange().setValues(list);
+        UpdateValuesResponse result
+                = service.spreadsheets().values().update(spreadsheetId, range, body)
+                        .setValueInputOption("RAW")
                         .execute();
         System.out.printf("%d cells updated.", result.getUpdatedCells());
 
@@ -87,34 +101,22 @@ public class Main {
         return result;
     }
 
-        public static AppendValuesResponse appendValues(String spreadsheetId, String range)
+    public static AppendValuesResponse appendValues(String spreadsheetId, String range, ArrayList<Object> values)
             throws IOException {
-        
-        List<List<Object>> values = new ArrayList();
-        values.add(new ArrayList());
-        values.get(0).add("Jackdaws");
-        values.get(0).add("love");
-        values.get(0).add("my");
-        values.get(0).add("big");
-        
 
-        
-        ValueRange body = new ValueRange()
-                .setValues(values);
-//        UpdateValuesResponse result =
-//                service.spreadsheets().values().update(spreadsheetId, range, body)
-//                        .setValueInputOption("USER_ENTERED")
-//                        .execute();
-        // System.out.printf("%d cells updated.", result.getUpdatedCells());
+        List<List<Object>> list = new ArrayList();
+        list.add(values);
 
-        AppendValuesResponse result =
-                service.spreadsheets().values().append(spreadsheetId, range, body)
+        ValueRange body = new ValueRange().setValues(list);
+
+        AppendValuesResponse result
+                = service.spreadsheets().values().append(spreadsheetId, range, body)
                         .setValueInputOption("USER_ENTERED")
                         .execute();
-        // [END sheets_update_values]
+
         return result;
     }
-    
+
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
         InputStream in = Main.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
